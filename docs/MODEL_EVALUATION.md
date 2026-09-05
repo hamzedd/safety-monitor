@@ -150,3 +150,33 @@ Set-Location D:\Projects\safety-monitor
 ```
 
 The evaluation command replaces the six evaluation JPEGs and `evaluation/results/metrics.json`; it does not update this narrative report automatically. It never changes the source video or Streamlit UI. Keep a copy of measurements if comparing subsequent runs.
+
+## Addendum: pairing a separate person detector
+
+Given this model's Person-detection failure above, the decision was made to keep this
+model for Hardhat/Safety Vest only and pair it with a separately verified COCO person
+detector (Ultralytics YOLOv8n) for locating people — see
+[PROJECT_PLAN.md](PROJECT_PLAN.md) build order step 2.
+
+- Source checkpoint: `yolov8n.pt`, official [`ultralytics/assets` release `v8.3.0`](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n.pt).
+- Downloaded and independently hashed: **6,549,796 bytes**, SHA-256
+  `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36`. Pinned in
+  `evaluation/download_person_model.py`.
+- License: AGPL-3.0, same family already accepted for the SafetyVision v2 weights above —
+  no new license category introduced.
+- The `.pt` checkpoint must be exported to ONNX locally (`pip install ultralytics`, then
+  `python -m evaluation.download_person_model`); this needs torch and is **not** part of
+  the app's runtime dependencies (`requirements.txt` is unchanged). The exported ONNX
+  bytes are not bit-reproducible across torch/ultralytics versions, so unlike the model
+  above, there is no fixed expected ONNX hash — `evaluation.detector.validate_person_session`
+  checks the actual input/output shapes and, if present, embedded class names at runtime
+  instead.
+- `evaluation/run_evaluation.py` accepts `--person-model PATH` to run both models per frame
+  and merge Person boxes (tagged `source: "person"`) with Hardhat/Safety Vest boxes (tagged
+  `source: "ppe"`) into one annotated frame and one detections list.
+- **Not yet evaluated against real footage.** This addendum only records what has been
+  verified so far (checkpoint provenance/integrity, code paths, unit tests). Actual
+  detection quality, latency (expect roughly double the single-model timings above, since
+  two full inference passes run per frame), and memory on real site video still need to be
+  measured on the laptop, the same way the table above was produced, before any integration
+  into `app.py`.

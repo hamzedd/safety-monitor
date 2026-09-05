@@ -1,6 +1,22 @@
 # Construction-site safety review plan
 
-Pipeline: video → sampled frames → people/helmet/vest detection → equipment-to-person matching → equipment detected / possible missing / uncertain → human review.
+Pipeline: upload video → check format/size → resize and sample frames → detect people,
+helmets and vests → match equipment to each person → for each equipment type, decide
+equipment detected / possible missing / uncertain → show annotated frames and timestamps
+for human review.
+
+**The central rule: a missing detection is never treated as proof equipment is absent.**
+Three outcomes per equipment type, not two:
+
+| Signal | Meaning | Shown as |
+| --- | --- | --- |
+| Equipment detected on the person | Equipment detected | Green |
+| Relevant body area visible, no equipment detected | Possible missing equipment | Red |
+| Relevant body area not visible/assessable (occluded, too far, blurry) | Unable to assess / uncertain | Grey |
+
+Green never means the worker or site is fully safe; red never means a confirmed
+violation — both require human review. Live cameras, gloves, automatic alerts, and
+identifying individual workers are explicitly out of scope for this first version.
 
 ## Milestone 1: local upload and sampling
 
@@ -8,12 +24,33 @@ Streamlit accepts one MP4 up to 100 MiB, previews it, and reports duration, reso
 
 No detection models, simulated AI results, or safety classifications are included.
 
-## Future milestones
+## Build order and status
 
-1. Validate CPU-compatible people, helmet and vest detectors on representative, consented site footage. Measure memory, latency and detection quality before choosing models. Preserve source timestamps and pass samples incrementally to inference.
-2. Match equipment to individual people using spatial relationships and confidence. Handle multiple nearby people, partial bodies, occlusion and small subjects explicitly.
-3. Report evidence as equipment detected, possible missing, or uncertain. A missing detection alone must not be treated as proof that equipment is absent. Calibrate thresholds on reviewed examples and retain relevant image evidence.
-4. Provide a human review queue with timestamps, evidence and editable decisions. Record reviewer corrections and evaluate false positives and false negatives before operational use.
+1. **Video upload and frame extraction** — done (Milestone 1 above).
+2. **Helmet-and-vest detection model** — evaluated; see [MODEL_EVALUATION.md](MODEL_EVALUATION.md).
+   SafetyVision v2 (YOLOv8s ONNX) detects Hardhat/Safety Vest plausibly but never detects
+   Person on real footage (raw confidence ~0.0002), so it cannot anchor matching alone.
+   Decision: pair it with a separately verified COCO person detector
+   (`evaluation/download_person_model.py`, Ultralytics YOLOv8n, checkpoint hash-pinned and
+   verified) for the "person" side only; Hardhat/Vest stay on the original model.
+   `evaluation/run_evaluation.py --person-model PATH` runs and merges both. **Not yet run
+   against real footage** — the ONNX export needs `pip install ultralytics` (torch) on the
+   laptop and a fresh evaluation report, mirroring how the first model was verified.
+3. **Person-to-equipment matching and uncertainty rules** — not started. Needs a working
+   person detector (step 2) first. Will use spatial relationships (e.g. is a hardhat box
+   inside/above a person's head region) and must explicitly classify each equipment type as
+   detected / possible missing / uncertain per the table above — never collapse "not
+   detected" into "missing". Handle multiple nearby people, partial bodies, occlusion, and
+   small/distant subjects explicitly.
+4. **Annotated frames and timestamped findings list in the app** — not started. Depends on
+   steps 2-3 producing real per-frame results to display; reuses Milestone 1's incremental
+   per-sample callback and 12-preview retention limit.
+5. **Compare against manually checked footage** — not started. Calibrate thresholds on
+   reviewed examples; record false positives/negatives before treating results as anything
+   more than a review aid.
+
+A human review queue with editable decisions and reviewer-correction tracking is a later
+milestone beyond this build order, once steps 1-5 produce a working, testable demo.
 
 ## Constraints and decisions
 
