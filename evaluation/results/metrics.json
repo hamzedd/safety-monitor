@@ -1,0 +1,471 @@
+{
+  "video": "C:\\Users\\ASUS\\Downloads\\12098511-hd_1920_1080_50fps.mp4",
+  "video_sha256": "bed96770c9ae7b482106bc6efd91998c709a19e1c068b80ec37165e2388a36d1",
+  "video_info": {
+    "width": 1280,
+    "height": 720,
+    "fps": 50.0,
+    "frame_count": 736
+  },
+  "duration_seconds": 14.72,
+  "model_manifest": {
+    "repository": "ayushgupta7777/safetyvision-yolov8",
+    "revision": "56a71758b55f0e9f2b4b2d6b51a779a1f882da10",
+    "url": "https://huggingface.co/ayushgupta7777/safetyvision-yolov8/resolve/56a71758b55f0e9f2b4b2d6b51a779a1f882da10/v2/best_640.onnx",
+    "sha256": "ea18ae903a566e8fa76f3ee1c503075522dca269269315e9c862efa170430b35",
+    "bytes": 44764727,
+    "license": "AGPL-3.0",
+    "source_revision": "3fba9d358321b14725ee6d329dd2bc99c89c8320",
+    "source_url": "https://github.com/ayushgupta07xx/SafetyVision/blob/3fba9d358321b14725ee6d329dd2bc99c89c8320/core/detector.py",
+    "preserved_files": {
+      "app.py": "656ea98b3af8e461c6eddac9a4961620789f6d2b01700ac99fed5b9d901c7c5c",
+      "video_processing.py": "aa106da07a8187f55a3291a376e9aae35367b31c38de269872586818223b7b24",
+      ".streamlit/config.toml": "bc33d6efb8d6b2ac795048ba9239e9b9b95687a49e2043e0a4fa0d5f00c2b77d"
+    }
+  },
+  "metadata": {
+    "date": "2026-05-22T16:10:56.805457",
+    "description": "Ultralytics best model trained on /home/ayushgupta15062003/safetyvision/data/merged/v2/data.yaml",
+    "author": "Ultralytics",
+    "version": "8.4.51",
+    "task": "detect",
+    "license": "AGPL-3.0 License (https://ultralytics.com/license)",
+    "docs": "https://docs.ultralytics.com",
+    "stride": "32",
+    "batch": "1",
+    "imgsz": "[640, 640]",
+    "names": "{0: 'Fall-Detected', 1: 'Gloves', 2: 'Goggles', 3: 'Hardhat', 4: 'Mask', 5: 'NO-Gloves', 6: 'NO-Goggles', 7: 'NO-Hardhat', 8: 'NO-Mask', 9: 'NO-Safety Vest', 10: 'No_Harness', 11: 'Person', 12: 'Safety Vest'}",
+    "args": "{'batch': 1, 'half': False, 'dynamic': False, 'simplify': True, 'opset': None, 'nms': False}",
+    "channels": "3",
+    "end2end": "False"
+  },
+  "input_shape": [
+    1,
+    3,
+    640,
+    640
+  ],
+  "output_shape": [
+    1,
+    17,
+    8400
+  ],
+  "providers": [
+    "CPUExecutionProvider"
+  ],
+  "versions": {
+    "onnxruntime": "1.29.0",
+    "psutil": "7.2.2",
+    "numpy": "2.5.2",
+    "opencv-python-headless": "5.0.0.93",
+    "streamlit": "1.63.0"
+  },
+  "python": "3.12.4",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "threads": {
+    "intra_op": 2,
+    "inter_op": 1
+  },
+  "confidence_threshold": 0.4,
+  "nms_iou": 0.45,
+  "load_ms": 248.68329998571426,
+  "cold_inference_ms": 318.3448000345379,
+  "warm_inference": {
+    "count": 23,
+    "mean_ms": 302.88278695408496,
+    "median_ms": 300.46280001988634,
+    "min_ms": 286.01480001816526,
+    "max_ms": 333.134800021071
+  },
+  "memory_bytes": {
+    "baseline": {
+      "rss": 59543552,
+      "private": 276340736,
+      "peak_wset": 59547648
+    },
+    "after_load": {
+      "rss": 113819648,
+      "private": 327213056,
+      "peak_wset": 162119680
+    },
+    "sampled_peak": {
+      "rss": 299896832,
+      "private": 569901056,
+      "peak_wset": 305455104
+    },
+    "final": {
+      "rss": 242978816,
+      "private": 508346368,
+      "peak_wset": 305455104
+    }
+  },
+  "frames": [
+    {
+      "frame_index": 0,
+      "timestamp_seconds": 0.0,
+      "image": "frame_000000_0.000s.jpg",
+      "shape": [
+        360,
+        640,
+        3
+      ],
+      "detections": [
+        {
+          "class_id": 12,
+          "name": "Safety Vest",
+          "confidence": 0.595419704914093,
+          "box": [
+            515.2655029296875,
+            109.36883544921875,
+            555.0287475585938,
+            159.688720703125
+          ]
+        },
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.4444595277309418,
+          "box": [
+            309.9617919921875,
+            170.94232177734375,
+            332.9300231933594,
+            193.07431030273438
+          ]
+        },
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.40879547595977783,
+          "box": [
+            366.6107177734375,
+            77.060302734375,
+            391.2513122558594,
+            95.61262512207031
+          ]
+        }
+      ],
+      "counts": {
+        "Safety Vest": 1,
+        "Hardhat": 2
+      },
+      "diagnostic_counts_at_025": {
+        "Safety Vest": 2,
+        "Hardhat": 5
+      },
+      "max_raw_target_scores": {
+        "Hardhat": 0.4444595277309418,
+        "Person": 0.0002510547637939453,
+        "Safety Vest": 0.595419704914093
+      },
+      "class_agnostic_selected_counts": {
+        "Safety Vest": 1,
+        "Hardhat": 2
+      },
+      "inference_ms": [
+        318.3448000345379,
+        321.792800037656,
+        308.50699997972697,
+        306.44249997567385
+      ],
+      "preprocess_ms": 11.530100018717349,
+      "decode_ms": 2.237299981061369
+    },
+    {
+      "frame_index": 147,
+      "timestamp_seconds": 2.94,
+      "image": "frame_000147_2.940s.jpg",
+      "shape": [
+        360,
+        640,
+        3
+      ],
+      "detections": [
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.49714282155036926,
+          "box": [
+            360.44097900390625,
+            86.92106628417969,
+            386.9931640625,
+            109.63371276855469
+          ]
+        },
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.403755784034729,
+          "box": [
+            313.95758056640625,
+            179.20281982421875,
+            338.0789489746094,
+            205.06466674804688
+          ]
+        }
+      ],
+      "counts": {
+        "Hardhat": 2
+      },
+      "diagnostic_counts_at_025": {
+        "Hardhat": 4,
+        "Safety Vest": 1
+      },
+      "max_raw_target_scores": {
+        "Hardhat": 0.49714282155036926,
+        "Person": 0.00022137165069580078,
+        "Safety Vest": 0.3199373483657837
+      },
+      "class_agnostic_selected_counts": {
+        "Hardhat": 2
+      },
+      "inference_ms": [
+        290.9275999991223,
+        302.430399984587,
+        286.01480001816526,
+        294.1941999597475
+      ],
+      "preprocess_ms": 10.67650003824383,
+      "decode_ms": 1.3524999958463013
+    },
+    {
+      "frame_index": 294,
+      "timestamp_seconds": 5.88,
+      "image": "frame_000294_5.880s.jpg",
+      "shape": [
+        360,
+        640,
+        3
+      ],
+      "detections": [
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.45350363850593567,
+          "box": [
+            313.0581970214844,
+            180.70394897460938,
+            339.3667297363281,
+            207.29367065429688
+          ]
+        },
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.44485750794410706,
+          "box": [
+            368.6772766113281,
+            135.99932861328125,
+            398.7157897949219,
+            162.4266357421875
+          ]
+        },
+        {
+          "class_id": 12,
+          "name": "Safety Vest",
+          "confidence": 0.4332406520843506,
+          "box": [
+            530.1932373046875,
+            118.6622314453125,
+            564.3375854492188,
+            173.709228515625
+          ]
+        }
+      ],
+      "counts": {
+        "Hardhat": 2,
+        "Safety Vest": 1
+      },
+      "diagnostic_counts_at_025": {
+        "Hardhat": 4,
+        "Safety Vest": 2
+      },
+      "max_raw_target_scores": {
+        "Hardhat": 0.45350363850593567,
+        "Person": 0.00020229816436767578,
+        "Safety Vest": 0.4332406520843506
+      },
+      "class_agnostic_selected_counts": {
+        "Hardhat": 2,
+        "Safety Vest": 1
+      },
+      "inference_ms": [
+        288.90509996563196,
+        325.5902999662794,
+        299.61579997325316,
+        301.5256999642588
+      ],
+      "preprocess_ms": 9.982799994759262,
+      "decode_ms": 1.4066000003367662
+    },
+    {
+      "frame_index": 441,
+      "timestamp_seconds": 8.82,
+      "image": "frame_000441_8.820s.jpg",
+      "shape": [
+        360,
+        640,
+        3
+      ],
+      "detections": [
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.573689341545105,
+          "box": [
+            379.0208740234375,
+            95.07138061523438,
+            408.6788635253906,
+            116.24066162109375
+          ]
+        },
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.4757976233959198,
+          "box": [
+            315.44329833984375,
+            181.18658447265625,
+            340.17779541015625,
+            206.66116333007812
+          ]
+        }
+      ],
+      "counts": {
+        "Hardhat": 2
+      },
+      "diagnostic_counts_at_025": {
+        "Hardhat": 3,
+        "Safety Vest": 2
+      },
+      "max_raw_target_scores": {
+        "Hardhat": 0.573689341545105,
+        "Person": 0.00022155046463012695,
+        "Safety Vest": 0.355399489402771
+      },
+      "class_agnostic_selected_counts": {
+        "Hardhat": 2
+      },
+      "inference_ms": [
+        288.2565999752842,
+        291.0338999936357,
+        296.74480005633086,
+        310.1396000129171
+      ],
+      "preprocess_ms": 9.9845000077039,
+      "decode_ms": 1.5860000276006758
+    },
+    {
+      "frame_index": 588,
+      "timestamp_seconds": 11.76,
+      "image": "frame_000588_11.760s.jpg",
+      "shape": [
+        360,
+        640,
+        3
+      ],
+      "detections": [
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.5669082999229431,
+          "box": [
+            379.52398681640625,
+            95.40521240234375,
+            408.6960144042969,
+            117.482177734375
+          ]
+        }
+      ],
+      "counts": {
+        "Hardhat": 1
+      },
+      "diagnostic_counts_at_025": {
+        "Hardhat": 4,
+        "Safety Vest": 1
+      },
+      "max_raw_target_scores": {
+        "Hardhat": 0.5669082999229431,
+        "Person": 0.00020247697830200195,
+        "Safety Vest": 0.3566383123397827
+      },
+      "class_agnostic_selected_counts": {
+        "Hardhat": 1
+      },
+      "inference_ms": [
+        316.3361999904737,
+        300.46280001988634,
+        287.5398999894969,
+        289.01310003129765
+      ],
+      "preprocess_ms": 11.591799964662641,
+      "decode_ms": 1.2738000368699431
+    },
+    {
+      "frame_index": 735,
+      "timestamp_seconds": 14.7,
+      "image": "frame_000735_14.700s.jpg",
+      "shape": [
+        360,
+        640,
+        3
+      ],
+      "detections": [
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.43498075008392334,
+          "box": [
+            381.53472900390625,
+            90.76742553710938,
+            410.9106750488281,
+            113.42669677734375
+          ]
+        },
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.40528517961502075,
+          "box": [
+            353.7611083984375,
+            289.68408203125,
+            378.9649353027344,
+            306.7882080078125
+          ]
+        },
+        {
+          "class_id": 3,
+          "name": "Hardhat",
+          "confidence": 0.4005928635597229,
+          "box": [
+            312.3668518066406,
+            176.70452880859375,
+            336.9656066894531,
+            202.03219604492188
+          ]
+        }
+      ],
+      "counts": {
+        "Hardhat": 3
+      },
+      "diagnostic_counts_at_025": {
+        "Hardhat": 5
+      },
+      "max_raw_target_scores": {
+        "Hardhat": 0.43498075008392334,
+        "Person": 0.00021755695343017578,
+        "Safety Vest": 0.232370525598526
+      },
+      "class_agnostic_selected_counts": {
+        "Hardhat": 3
+      },
+      "inference_ms": [
+        302.11839999537915,
+        297.12790000485256,
+        328.44990002922714,
+        333.134800021071
+      ],
+      "preprocess_ms": 8.48670001141727,
+      "decode_ms": 1.14390003727749
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "repository": "ayushgupta7777/safetyvision-yolov8",
+  "revision": "56a71758b55f0e9f2b4b2d6b51a779a1f882da10",
+  "url": "https://huggingface.co/ayushgupta7777/safetyvision-yolov8/resolve/56a71758b55f0e9f2b4b2d6b51a779a1f882da10/v2/best_640.onnx",
+  "sha256": "ea18ae903a566e8fa76f3ee1c503075522dca269269315e9c862efa170430b35",
+  "bytes": 44764727,
+  "license": "AGPL-3.0",
+  "source_revision": "3fba9d358321b14725ee6d329dd2bc99c89c8320",
+  "source_url": "https://github.com/ayushgupta07xx/SafetyVision/blob/3fba9d358321b14725ee6d329dd2bc99c89c8320/core/detector.py",
+  "preserved_files": {
+    "app.py": "656ea98b3af8e461c6eddac9a4961620789f6d2b01700ac99fed5b9d901c7c5c",
+    "video_processing.py": "aa106da07a8187f55a3291a376e9aae35367b31c38de269872586818223b7b24",
+    ".streamlit/config.toml": "bc33d6efb8d6b2ac795048ba9239e9b9b95687a49e2043e0a4fa0d5f00c2b77d"
+  }
+}
