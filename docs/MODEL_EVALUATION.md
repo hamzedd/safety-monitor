@@ -1,5 +1,17 @@
 # SafetyVision v2 CPU evaluation
 
+> CURRENT REVIEW STATUS: the tables below are historical reports. The committed
+> `evaluation/results/metrics.json` and JPEGs contain the original single-model run,
+> not paired-model or current matching evidence. The paired-run numbers below have
+> not been independently reproduced in this checkout. Visual verification remains
+> pending. Do not treat this report as approval to integrate safety assessments.
+> Matching now emits only detected spatial associations or uncertain; it never
+> infers missing equipment from unmatched boxes.
+> New evaluator runs save to separate timestamped subdirectories of
+> `evaluation/results/` and include a run ID, matching policy and person model hash.
+> A fresh paired run on the source video and manual image review are still required.
+
+
 Date: 2026-09-05. Status: evaluation complete; **not recommended for integration as the combined people/PPE detector on this footage**. Runtime and memory are practical, but no people were detected in six frames where people are visibly present. Helmet and vest detections are incomplete. No missing-equipment, compliance, or violation conclusions were produced.
 
 ## Working app preserved
@@ -149,7 +161,7 @@ Set-Location D:\Projects\safety-monitor
 .\.venv\Scripts\python.exe -m evaluation.run_evaluation --video 'C:\Users\ASUS\Downloads\12098511-hd_1920_1080_50fps.mp4'
 ```
 
-The evaluation command replaces the six evaluation JPEGs and `evaluation/results/metrics.json`; it does not update this narrative report automatically. It never changes the source video or Streamlit UI. Keep a copy of measurements if comparing subsequent runs.
+The evaluation command now writes JPEGs and metrics to a fresh timestamped directory under `evaluation/results/`; it does not update this narrative report automatically. It never changes the source video or Streamlit UI. Keep a copy of measurements if comparing subsequent runs.
 
 ## Addendum: pairing a separate person detector
 
@@ -219,8 +231,24 @@ Combined warm per-frame inference is roughly 451 ms (339 + 112) — less than do
 original single-model ~303 ms, since the person model is substantially lighter. Memory:
 baseline RSS 59.24 MiB, after loading both models 130.17 MiB, sampled peak RSS 365.66 MiB
 / peak private 651.47 MiB (up from 286.00 MiB / 543.50 MiB with one model), final RSS
-311.19 MiB. Comfortably within the 8 GB budget with substantial headroom.
+311.19 MiB. These reported process measurements exclude other applications and are not an 8 GB system memory guarantee.
 
 **Decision: the pairing is viable for build-order step 3** (equipment-to-person matching),
 pending the visual box-placement check above. Latency and memory both stayed well within
 practical bounds for sequential, single-video CPU processing.
+
+## Re-evaluate the corrected matching logic on Windows
+
+Use the existing locally exported person model and original video:
+
+```powershell
+Set-Location D:\Projects\safety-monitor
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m evaluation.run_evaluation --video "C:\Users\ASUS\Downloads\12098511-hd_1920_1080_50fps.mp4" --person-model models\yolov8n-person-640.onnx
+```
+
+Review the printed results directory's images and `metrics.json` together. Confirm
+box placement for each worker, missed detections, and ambiguous associations.
+Do not compare an older JPEG with a newer metrics file. The original MP4 and ONNX
+weights were not available in the review environment, so no new inference accuracy
+or performance claim accompanies the matching correction.

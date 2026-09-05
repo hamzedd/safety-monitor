@@ -1,6 +1,7 @@
 """Run with python -m evaluation.run_evaluation --video PATH. No app changes."""
 import argparse
 from collections import Counter
+from datetime import datetime, timezone
 import hashlib
 import importlib.metadata
 import json
@@ -35,8 +36,9 @@ def main():
                         'Safety Vest alone, as before.')
     args = parser.parse_args()
     video = Path(args.video)
-    output_dir = ROOT / 'evaluation' / 'results'
-    output_dir.mkdir(exist_ok=True)
+    run_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+    output_dir = ROOT / 'evaluation' / 'results' / run_id
+    output_dir.mkdir(parents=True, exist_ok=False)
     verify_model(MODEL)  # Must happen before creating any model session.
     process = psutil.Process()
     baseline = memory(process)
@@ -159,6 +161,7 @@ def main():
             person_manifest_path = ROOT / 'models/manifest_person.json'
             person_report = dict(
                 model=str(args.person_model),
+                model_sha256=hashlib.file_digest(Path(args.person_model).open('rb'), 'sha256').hexdigest(),
                 manifest=json.loads(person_manifest_path.read_text()) if person_manifest_path.exists() else None,
                 input_shape=person_session.get_inputs()[0].shape,
                 output_shape=person_session.get_outputs()[0].shape,
@@ -169,7 +172,11 @@ def main():
                                     median_ms=statistics.median(person_warm_ms) if person_warm_ms else None,
                                     min_ms=min(person_warm_ms) if person_warm_ms else None,
                                     max_ms=max(person_warm_ms) if person_warm_ms else None))
-        report = dict(video=str(video), video_sha256=hashlib.sha256(video.read_bytes()).hexdigest(),
+        with video.open('rb') as stream:
+            video_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
+        report = dict(run_id=run_id, evidence_status='generated_not_manually_reviewed',
+                      matching_policy='unambiguous_spatial_association_else_uncertain_v2',
+                      video=str(video), video_sha256=video_hash,
                       video_info=vars(info), duration_seconds=info.duration,
                       model_manifest=json.loads((ROOT / 'models/manifest.json').read_text()),
                       person_model=person_report,
@@ -185,6 +192,7 @@ def main():
                       frames=records)
         (output_dir / 'metrics.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
         print(json.dumps({key: value for key, value in report.items() if key not in ['metadata','model_manifest','frames']}, indent=2))
+        print('Results directory:', output_dir)
         print('Frame counts:', [(r['timestamp_seconds'], r['counts']) for r in records])
         if person_session is not None:
             print('Per-person matches:', [(r['timestamp_seconds'],

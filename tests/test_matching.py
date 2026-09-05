@@ -27,11 +27,11 @@ class MatchingTests(unittest.TestCase):
         self.assertEqual(result['unmatched_hardhats'], [])
         self.assertEqual(result['unmatched_vests'], [])
 
-    def test_possible_missing_when_no_equipment_at_all(self):
+    def test_uncertain_when_visibility_and_equipment_are_unknown(self):
         people = [person([50, 100, 150, 300])]
         result = match_people_to_equipment(people)
-        self.assertEqual(result['people'][0]['hardhat'], 'possible_missing')
-        self.assertEqual(result['people'][0]['vest'], 'possible_missing')
+        self.assertEqual(result['people'][0]['hardhat'], 'uncertain')
+        self.assertEqual(result['people'][0]['vest'], 'uncertain')
 
     def test_too_small_person_is_uncertain_for_both_regardless_of_equipment(self):
         people = [person([50, 100, 70, 130])]  # height 30 < MIN_PERSON_HEIGHT
@@ -47,16 +47,16 @@ class MatchingTests(unittest.TestCase):
         people = [person([50, 0, 150, 300])]  # box top touches y=0
         result = match_people_to_equipment(people)
         self.assertEqual(result['people'][0]['hardhat'], 'uncertain')
-        # Torso isn't checked for edge-cropping by this heuristic (documented limitation).
-        self.assertEqual(result['people'][0]['vest'], 'possible_missing')
+        # Torso visibility is also unverified.
+        self.assertEqual(result['people'][0]['vest'], 'uncertain')
 
     def test_equipment_outside_target_zone_does_not_count(self):
         # Vest-shaped box placed over the head zone must not satisfy the hardhat match.
         people = [person([50, 100, 150, 300])]
         equipment = [vest([60, 105, 140, 145])]
         result = match_people_to_equipment(people + equipment)
-        self.assertEqual(result['people'][0]['hardhat'], 'possible_missing')
-        self.assertEqual(result['people'][0]['vest'], 'possible_missing')
+        self.assertEqual(result['people'][0]['hardhat'], 'uncertain')
+        self.assertEqual(result['people'][0]['vest'], 'uncertain')
         self.assertEqual(len(result['unmatched_vests']), 1)
 
     def test_each_equipment_box_assigned_to_at_most_one_person(self):
@@ -65,7 +65,7 @@ class MatchingTests(unittest.TestCase):
         equipment = [hardhat([10, 105, 90, 145])]
         result = match_people_to_equipment(people + equipment)
         detected = [r['hardhat'] for r in result['people']].count('detected')
-        missing = [r['hardhat'] for r in result['people']].count('possible_missing')
+        missing = [r['hardhat'] for r in result['people']].count('uncertain')
         self.assertEqual(detected, 1)
         self.assertEqual(missing, 1)
         self.assertEqual(result['unmatched_hardhats'], [])
@@ -75,7 +75,7 @@ class MatchingTests(unittest.TestCase):
         people = [person([50, 100, 150, 300])]
         equipment = [hardhat([60, 140, 140, 220])]
         result = match_people_to_equipment(people + equipment)
-        self.assertEqual(result['people'][0]['hardhat'], 'possible_missing')
+        self.assertEqual(result['people'][0]['hardhat'], 'uncertain')
         self.assertEqual(result['unmatched_hardhats'], equipment)
 
     def test_unmatched_equipment_from_an_undetected_person_is_surfaced(self):
@@ -84,3 +84,31 @@ class MatchingTests(unittest.TestCase):
         result = match_people_to_equipment(equipment)
         self.assertEqual(result['people'], [])
         self.assertEqual(result['unmatched_hardhats'], equipment)
+
+    def test_overlapping_people_are_ambiguous_in_either_order(self):
+        a, b = person([0, 100, 100, 300]), person([50, 100, 150, 300])
+        hat = hardhat([60, 105, 100, 145])
+        for people in ([a, b], [b, a]):
+            result = match_people_to_equipment(people + [hat])
+            self.assertTrue(all(p['hardhat'] == 'uncertain' for p in result['people']))
+            self.assertEqual(result['unmatched_hardhats'], [hat])
+
+    def test_two_candidate_helmets_remain_unresolved(self):
+        hats = [hardhat([60, 105, 100, 140]), hardhat([100, 105, 140, 140])]
+        for equipment in (hats, hats[::-1]):
+            result = match_people_to_equipment([person([50, 100, 150, 300])] + equipment)
+            self.assertEqual(result['people'][0]['hardhat'], 'uncertain')
+            self.assertEqual(len(result['unmatched_hardhats']), 2)
+
+    def test_bent_or_cropped_worker_without_match_never_implies_absence(self):
+        for box in ([10, 100, 200, 180], [10, 200, 100, 360], [10, 0, 100, 150]):
+            result = match_people_to_equipment([person(box)])['people'][0]
+            self.assertEqual((result['hardhat'], result['vest']), ('uncertain', 'uncertain'))
+
+    def test_distinct_matches_are_invariant_to_person_order(self):
+        a, b = person([0, 100, 100, 300]), person([200, 100, 300, 300])
+        hats = [hardhat([10, 105, 90, 145]), hardhat([210, 105, 290, 145])]
+        def normalized(people):
+            return {tuple(p['person_box']): p['hardhat_detection']['box']
+                    for p in match_people_to_equipment(people + hats)['people']}
+        self.assertEqual(normalized([a,b]), normalized([b,a]))

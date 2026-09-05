@@ -1,3 +1,12 @@
+# Current implementation rule (supersedes earlier matching heuristics)
+
+Bounding boxes do not establish visibility. Unmatched or ambiguous equipment associations
+remain **uncertain**, including bending, occlusion and cropping. Only mutually unique
+spatial candidates are associated; no person-order tie-breaking is allowed.
+`possible_missing` is deferred until a separately validated visibility assessment exists.
+The current paired pipeline still requires freshly saved inference evidence and manual
+image review before UI integration. Historical details below describe earlier iterations.
+
 # Construction-site safety review plan
 
 Pipeline: upload video → check format/size → resize and sample frames → detect people,
