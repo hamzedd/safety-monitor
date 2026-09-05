@@ -18,6 +18,7 @@ import psutil
 from evaluation.detector import (COCO_NAMES, PERSON_SELECTED, decode, preprocess,
                                  validate_person_session, validate_session, verify_model)
 from evaluation.download_model import MODEL, ROOT
+from evaluation.matching import match_people_to_equipment
 from video_processing import inspect_video
 
 
@@ -141,6 +142,7 @@ def main():
                                          for cls, name in [(3, 'Hardhat'), (11, 'Person'), (12, 'Safety Vest')]}
                 if person_session is not None:
                     max_raw_target_scores['person'] = float(person_raw[0, 4, :].max())
+                person_matches = match_people_to_equipment(detections) if person_session is not None else None
                 records.append(dict(frame_index=index, timestamp_seconds=index / info.fps,
                                     image=filename, shape=list(frame.shape), detections=detections,
                                     counts=dict(Counter(d['name'] for d in detections)),
@@ -148,7 +150,8 @@ def main():
                                     max_raw_target_scores=max_raw_target_scores,
                                     class_agnostic_selected_counts=dict(Counter(d['name'] for d in original_nms)),
                                     inference_ms=runs, preprocess_ms=preprocess_ms, decode_ms=decode_ms,
-                                    person_inference_ms=person_runs or None))
+                                    person_inference_ms=person_runs or None,
+                                    person_matches=person_matches))
         finally:
             capture.release()
         person_report = None
@@ -183,6 +186,10 @@ def main():
         (output_dir / 'metrics.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
         print(json.dumps({key: value for key, value in report.items() if key not in ['metadata','model_manifest','frames']}, indent=2))
         print('Frame counts:', [(r['timestamp_seconds'], r['counts']) for r in records])
+        if person_session is not None:
+            print('Per-person matches:', [(r['timestamp_seconds'],
+                 [{'hardhat': m['hardhat'], 'vest': m['vest']} for m in r['person_matches']])
+                 for r in records])
     finally:
         stop.set()
         worker.join()

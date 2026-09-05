@@ -39,12 +39,21 @@ No detection models, simulated AI results, or safety classifications are include
    peak memory well under the 8GB budget. See MODEL_EVALUATION.md's real-footage addendum.
    Still pending: manual visual confirmation that the person boxes land on the actual
    workers, not background.
-3. **Person-to-equipment matching and uncertainty rules** — not started, now unblocked.
-   Will use spatial relationships (e.g. is a hardhat box
-   inside/above a person's head region) and must explicitly classify each equipment type as
-   detected / possible missing / uncertain per the table above — never collapse "not
-   detected" into "missing". Handle multiple nearby people, partial bodies, occlusion, and
-   small/distant subjects explicitly.
+3. **Person-to-equipment matching and uncertainty rules** — implemented in
+   `evaluation/matching.py` (`match_people_to_equipment`), independent of any upstream
+   logic; 7 unit tests. Approximates head/torso zones as fixed fractions (top 25% / 20-65%)
+   of each person box, since detections give no pose/keypoints. Equipment matches the
+   person whose zone it overlaps most (≥50% of the equipment box inside the zone),
+   one-to-one. Classifies each equipment type as detected / possible_missing / uncertain
+   per the table above — never collapses "not detected" into "missing". **Known
+   limitation**: only two visibility signals downgrade a call to uncertain — a very small
+   person box, or a box whose top touches the frame edge (head likely cropped). Genuine
+   occlusion (a hand over the head) or unusual poses (crouching, bending) aren't detected
+   by box geometry alone and will read as possible_missing rather than uncertain; this
+   needs either pose estimation or human review to catch. Wired into
+   `evaluation/run_evaluation.py` as `person_matches` per frame — **not yet reviewed
+   against real footage** (needs the same manual visual check as the person-detector boxes
+   above, comparing each match/uncertain/missing call against what's actually in frame).
 4. **Annotated frames and timestamped findings list in the app** — not started. Depends on
    steps 2-3 producing real per-frame results to display; reuses Milestone 1's incremental
    per-sample callback and 12-preview retention limit.
