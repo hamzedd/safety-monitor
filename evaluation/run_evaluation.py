@@ -188,8 +188,13 @@ def main():
         print('Frame counts:', [(r['timestamp_seconds'], r['counts']) for r in records])
         if person_session is not None:
             print('Per-person matches:', [(r['timestamp_seconds'],
-                 [{'hardhat': m['hardhat'], 'vest': m['vest']} for m in r['person_matches']])
+                 [{'hardhat': m['hardhat'], 'vest': m['vest']} for m in r['person_matches']['people']])
                  for r in records])
+            print('Unmatched equipment (detected but not confidently linked to any person):',
+                 [(r['timestamp_seconds'],
+                   dict(hardhats=len(r['person_matches']['unmatched_hardhats']),
+                        vests=len(r['person_matches']['unmatched_vests'])))
+                  for r in records])
     finally:
         stop.set()
         worker.join()

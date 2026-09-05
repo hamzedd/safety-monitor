@@ -52,8 +52,16 @@ def _best_match(equipment, zone, used):
 def match_people_to_equipment(detections):
     """Classify Hardhat/Safety Vest per person as 'detected', 'possible_missing', or
     'uncertain'. `detections` is the merged ppe+person list run_evaluation.py already
-    produces (each tagged with 'source' and, for ppe, 'class_id'). Returns one dict per
-    detected person; each equipment box is matched to at most one person."""
+    produces (each tagged with 'source' and, for ppe, 'class_id').
+
+    Returns a dict with 'people' (one entry per detected person; each equipment box is
+    matched to at most one person) and 'unmatched_hardhats'/'unmatched_vests' — real
+    detections that overlapped no person's zone by >=OVERLAP_THRESHOLD. Unmatched
+    equipment is surfaced rather than silently dropped: it means a hardhat/vest WAS
+    detected somewhere in the frame, but couldn't be confidently linked to a specific
+    person (e.g. the person detector missed that worker, or the box geometry didn't land
+    inside the estimated head/torso zone) — a different failure mode than "nothing was
+    detected at all", and one that should not be read as "possible_missing" for anyone."""
     people = [d for d in detections if d.get('source') == 'person']
     hardhats = [d for d in detections if d.get('source') == 'ppe' and d['class_id'] == HARDHAT_CLASS_ID]
     vests = [d for d in detections if d.get('source') == 'ppe' and d['class_id'] == VEST_CLASS_ID]
@@ -88,4 +96,6 @@ def match_people_to_equipment(detections):
             result['vest'] = 'possible_missing'
 
         results.append(result)
-    return results
+    return dict(people=results,
+               unmatched_hardhats=[det for index, det in enumerate(hardhats) if index not in used_hardhats],
+               unmatched_vests=[det for index, det in enumerate(vests) if index not in used_vests])

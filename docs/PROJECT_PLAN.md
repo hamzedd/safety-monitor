@@ -51,9 +51,20 @@ No detection models, simulated AI results, or safety classifications are include
    occlusion (a hand over the head) or unusual poses (crouching, bending) aren't detected
    by box geometry alone and will read as possible_missing rather than uncertain; this
    needs either pose estimation or human review to catch. Wired into
-   `evaluation/run_evaluation.py` as `person_matches` per frame — **not yet reviewed
-   against real footage** (needs the same manual visual check as the person-detector boxes
-   above, comparing each match/uncertain/missing call against what's actually in frame).
+   `evaluation/run_evaluation.py` as `person_matches` per frame (a dict with `people` and
+   `unmatched_hardhats`/`unmatched_vests` — real detections that overlapped no person's
+   zone enough to link, surfaced explicitly rather than silently dropped).
+
+   **First real-footage run (2026-09-06) found a genuine gap**: on 2 of 6 frames, a raw
+   Hardhat detection existed but matched no person (frame 2.94s: 2 raw Hardhats, only 1
+   linked to a person; frame 5.88s: 2 raw Hardhats, 0 linked). Frames 0.00s and 11.76s were
+   fully consistent (every raw detection linked to exactly one person). Cause not yet
+   isolated — could be the person detector missing that worker's box entirely, or the
+   fixed head/torso zone heuristic's 50% overlap threshold rejecting a real match. Now that
+   unmatched equipment is surfaced instead of hidden, the next laptop run should show
+   exactly which case it is per frame. Not yet safe to treat "possible_missing" as
+   reliable until this is understood — an unmatched-but-real hardhat must not read as
+   "missing" for whoever should have worn it.
 4. **Annotated frames and timestamped findings list in the app** — not started. Depends on
    steps 2-3 producing real per-frame results to display; reuses Milestone 1's incremental
    per-sample callback and 12-preview retention limit.
