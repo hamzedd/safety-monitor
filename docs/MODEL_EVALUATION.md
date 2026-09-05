@@ -252,3 +252,21 @@ box placement for each worker, missed detections, and ambiguous associations.
 Do not compare an older JPEG with a newer metrics file. The original MP4 and ONNX
 weights were not available in the review environment, so no new inference accuracy
 or performance claim accompanies the matching correction.
+
+## Controlled threshold and crop comparison
+
+`python -m evaluation.compare_detection --video PATH --person-model PATH` compares
+0.40 full-frame baseline, 0.25 full-frame detection, and 0.25 full-frame plus overlapping
+640-pixel native-resolution tiles. Both detectors run on each view. Tile predictions
+map back to the original frame before class-aware NMS; matching uses the same 640-wide
+coordinate space as the baseline. Partial boundary boxes may survive NMS and must be
+reviewed. This is an experiment, not a validated accuracy improvement or new default.
+
+Each run creates its own comparison directory with 18 JPEGs and comparison.json.
+Images use numbered boxes and a separate legend instead of overlapping class labels.
+The JSON contains matching outcomes and detections in preview-image coordinates.
+Compare each variant against visible workers/equipment, record false positives as well
+as recovered detections, and inspect duplicate/partial crop boxes. More boxes alone is
+not evidence of better accuracy. Timings include preprocessing, inference, decoding,
+merging and matching; they exclude rendering and saving and are not warmed benchmarks.
+The Streamlit app and original evaluator remain unchanged by this comparison feature.
