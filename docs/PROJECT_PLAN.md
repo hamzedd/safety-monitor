@@ -33,11 +33,14 @@ No detection models, simulated AI results, or safety classifications are include
    Decision: pair it with a separately verified COCO person detector
    (`evaluation/download_person_model.py`, Ultralytics YOLOv8n, checkpoint hash-pinned and
    verified) for the "person" side only; Hardhat/Vest stay on the original model.
-   `evaluation/run_evaluation.py --person-model PATH` runs and merges both. **Not yet run
-   against real footage** — the ONNX export needs `pip install ultralytics` (torch) on the
-   laptop and a fresh evaluation report, mirroring how the first model was verified.
-3. **Person-to-equipment matching and uncertainty rules** — not started. Needs a working
-   person detector (step 2) first. Will use spatial relationships (e.g. is a hardhat box
+   `evaluation/run_evaluation.py --person-model PATH` runs and merges both. **Run against
+   real footage on 2026-09-06**: the paired detector found 3-5 people per frame where
+   SafetyVision v2 alone found zero (raw score ~0.0002); combined latency ~451ms/frame warm,
+   peak memory well under the 8GB budget. See MODEL_EVALUATION.md's real-footage addendum.
+   Still pending: manual visual confirmation that the person boxes land on the actual
+   workers, not background.
+3. **Person-to-equipment matching and uncertainty rules** — not started, now unblocked.
+   Will use spatial relationships (e.g. is a hardhat box
    inside/above a person's head region) and must explicitly classify each equipment type as
    detected / possible missing / uncertain per the table above — never collapse "not
    detected" into "missing". Handle multiple nearby people, partial bodies, occlusion, and

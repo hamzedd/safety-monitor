@@ -174,9 +174,53 @@ detector (Ultralytics YOLOv8n) for locating people — see
 - `evaluation/run_evaluation.py` accepts `--person-model PATH` to run both models per frame
   and merge Person boxes (tagged `source: "person"`) with Hardhat/Safety Vest boxes (tagged
   `source: "ppe"`) into one annotated frame and one detections list.
-- **Not yet evaluated against real footage.** This addendum only records what has been
-  verified so far (checkpoint provenance/integrity, code paths, unit tests). Actual
-  detection quality, latency (expect roughly double the single-model timings above, since
-  two full inference passes run per frame), and memory on real site video still need to be
-  measured on the laptop, the same way the table above was produced, before any integration
-  into `app.py`.
+
+### Real-footage run: person detector actually detects people
+
+Date: 2026-09-06. Same source video as the table above
+(`C:\Users\ASUS\Downloads\12098511-hd_1920_1080_50fps.mp4`, SHA-256
+`bed96770c9ae7b482106bc6efd91998c709a19e1c068b80ec37165e2388a36d1`, 1280x720, 50 FPS, 736
+frames, 14.72s), same six evenly spaced frame indices, both models run per frame via
+`python -m evaluation.run_evaluation --video <path> --person-model models\yolov8n-person-640.onnx`.
+
+| Timestamp | Hardhat | Safety Vest | Person (new) |
+| --- | ---: | ---: | ---: |
+| 0.00 s | 2 | 1 | 5 |
+| 2.94 s | 2 | 0 | 5 |
+| 5.88 s | 2 | 1 | 3 |
+| 8.82 s | 2 | 0 | 4 |
+| 11.76 s | 1 | 0 | 5 |
+| 14.70 s | 3 | 0 | 4 |
+
+Unlike SafetyVision v2 alone (zero Person detections, raw score ~0.0002 on every frame),
+the paired YOLOv8n COCO detector produces 3-5 person detections per frame, consistent with
+the multiple workers already visually confirmed present in these frames. **This resolves
+the original blocker**: there is now a person box to anchor equipment-to-person matching
+against. Annotated frames with the new person boxes are saved locally to
+`evaluation/results/` on the machine that ran this command; visual confirmation that the
+boxes land on the actual visible workers (not background) is a manual step still to be
+recorded here once reviewed.
+
+Actual model contract (verified via `validate_person_session` before trusting the file):
+input `[1, 3, 640, 640]` FP32, output `[1, 84, 8400]` FP32 (4 box + 80 COCO classes),
+`CPUExecutionProvider` only.
+
+Measured timing and memory (Windows, same machine/config as the table above, Intel Core
+i7-8565U, intra-op threads 2, inter-op threads 1):
+
+| Measurement | SafetyVision v2 (Hardhat/Vest) | YOLOv8n (Person) |
+| --- | ---: | ---: |
+| Session load | 272.86 ms | 109.85 ms |
+| Cold inference | 372.83 ms | 110.60 ms |
+| Warm inference mean / median | 338.75 / 320.75 ms | 112.37 / 112.08 ms |
+| Warm inference min / max | 285.41 / 498.53 ms | 102.45 / 149.33 ms |
+
+Combined warm per-frame inference is roughly 451 ms (339 + 112) — less than double the
+original single-model ~303 ms, since the person model is substantially lighter. Memory:
+baseline RSS 59.24 MiB, after loading both models 130.17 MiB, sampled peak RSS 365.66 MiB
+/ peak private 651.47 MiB (up from 286.00 MiB / 543.50 MiB with one model), final RSS
+311.19 MiB. Comfortably within the 8 GB budget with substantial headroom.
+
+**Decision: the pairing is viable for build-order step 3** (equipment-to-person matching),
+pending the visual box-placement check above. Latency and memory both stayed well within
+practical bounds for sequential, single-video CPU processing.
