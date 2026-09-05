@@ -6,7 +6,7 @@ import unittest
 import cv2
 import numpy as np
 
-from evaluation.detector import NAMES, preprocess, decode
+from evaluation.detector import COCO_NAMES, NAMES, PERSON_SELECTED, preprocess, decode
 
 
 def reference_decoder():
@@ -78,3 +78,23 @@ class DetectionTests(unittest.TestCase):
         for raw in [np.zeros((1, 8400, 17)), np.full((1, 17, 1), np.nan)]:
             with self.assertRaises(ValueError):
                 decode(raw, 1, (0, 0), (640, 640))
+
+    def test_decode_generalizes_to_a_different_class_count_and_selection(self):
+        # 84-channel COCO-shaped output (4 box + 80 classes); only class 0 ("person") selected.
+        result = np.zeros((1, 84, 2), dtype=np.float32)
+        result[0, :4, 0] = [200, 200, 100, 100]
+        result[0, 4, 0] = .9  # person
+        result[0, :4, 1] = [400, 400, 50, 50]
+        result[0, 4 + 2, 1] = .95  # car: not in PERSON_SELECTED, must be dropped
+        detections = decode(result, 1, (0, 0), (640, 640), names=COCO_NAMES, selected=PERSON_SELECTED)
+        self.assertEqual(len(detections), 1)
+        self.assertEqual(detections[0]['class_id'], 0)
+        self.assertEqual(detections[0]['name'], 'person')
+        np.testing.assert_allclose(detections[0]['box'], [150, 150, 250, 250])
+        with self.assertRaises(ValueError):
+            decode(np.zeros((1, 17, 1), dtype=np.float32), 1, (0, 0), (640, 640),
+                   names=COCO_NAMES, selected=PERSON_SELECTED)
+
+    def test_safetyvision_defaults_unchanged_by_generalization(self):
+        raw = output(([200, 200, 100, 100], 3, .7))
+        self.assertEqual(decode(raw, 1, (0, 0), (640, 640))[0]['name'], NAMES[3])
